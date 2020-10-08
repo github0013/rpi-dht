@@ -25,6 +25,7 @@ module RPi
           tries.to_i.times do
             value = ignore_exception { read!(pin) }
             return value if value.is_a?(Hash)
+            sleep 0.1
           end
 
           nil
