@@ -28,7 +28,13 @@ Or install it yourself as:
 ```rb
 require "rpi/dht"
 
-pin = 4
+pin = 4 # bcm number https://i.gyazo.com/8de74c9e6a7139e30c2f540715a24dc9.png
+
+####################
+# GPIO numbering
+####################
+# RPi::Dht.set_numbering(:bcm)        [default]
+# or RPi::Dht.set_numbering(:board)
 
 # Because it can't receive valid data from sensor reliably, there are methods try to read continusly until it gets valid data
 # [read_11 and read_22] (without !) are recommended
