@@ -7,8 +7,8 @@ RSpec.describe RPi::Dht do
     expect(RPi::GPIO).to be_a? Naught
   end
 
-  let(:pin) { 4 }
-  describe "read_11!" do
+  describe "reads" do
+    let(:pin) { 4 }
     subject { RPi::Dht }
 
     it "should read dht11!" do
