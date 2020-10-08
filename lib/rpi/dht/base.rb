@@ -101,38 +101,39 @@ module RPi
         # ...
         # ...
 
-        # end_part (useless)
+        # end_part (useless), but it's an indicator that 40 pairs before this is the data
         # after data, it ends with short period of falses then eternal trues
         # [false, false, false, ...]
         # [true, true, true, true, true, true, true, true, true, ...]
-        end_part, *low_high_pairs = break_by_high_or_low.reverse.each_slice(2).to_a
+
+        # take last 82 elements and make pairs
+        pair = 2
+        end_part_pair = pair
+        *low_high_pairs, end_part =
+          break_by_high_or_low.last(VALID_BYTE_SIZE * BITS_IN_BYTE * pair + end_part_pair)
+            .each_slice(2).to_a
 
         # https://i.gyazo.com/baba7ce475e945c732491a6afc9e4b9a.png
         # low_high_pairs = [
         #   ture / false array pair = 1bit
         #   8elements of them = 1byte worth of data
         #   [
-        #     [[true, true ...], [false, false ...]],  1
-        #     [[true, true ...], [false, false ...]],  2
-        #     [[true, true ...], [false, false ...]],  3
-        #     [[true, true ...], [false, false ...]],  4
-        #     [[true, true ...], [false, false ...]],  5
-        #     [[true, true ...], [false, false ...]],  6
-        #     [[true, true ...], [false, false ...]],  7
-        #     [[true, true ...], [false, false ...]],  8
+        #     [[false, false ...], [true, true ...]],  1
+        #     [[false, false ...], [true, true ...]],  2
+        #     [[false, false ...], [true, true ...]],  3
+        #     [[false, false ...], [true, true ...]],  4
+        #     [[false, false ...], [true, true ...]],  5
+        #     [[false, false ...], [true, true ...]],  6
+        #     [[false, false ...], [true, true ...]],  7
+        #     [[false, false ...], [true, true ...]],  8
         #   ]
 
         #   ...
         #   total of 5 bytes
         # ]
 
-        response_signal_part_chopped_off =
-          low_high_pairs.each_slice(8).collect(&:reverse).to_a.reverse.last(
-            VALID_BYTE_SIZE
-          )
-
         valid_bytes =
-          response_signal_part_chopped_off.select do |pair|
+          low_high_pairs.each_slice(8).to_a.select do |pair|
             pair.all? { |x| x.is_a?(Array) }
           end
 
@@ -158,13 +159,13 @@ module RPi
         #   [false, false, false, ...],
         #   ...
         # ]
-        all_falses = valid_bytes.collect { |byte| byte.collect(&:last) }.flatten(1)
+        all_falses = valid_bytes.collect { |byte| byte.collect(&:first) }.flatten(1)
         average_50us_false_size = all_falses.sum(&:size) / all_falses.size.to_f
 
         # https://i.gyazo.com/085693e497f9105bc66392d05112e0d3.png
         @byte_strings =
           valid_bytes.collect do |byte|
-            byte.collect { |trues, _| average_50us_false_size <= trues.size ? 1 : 0 }.join
+            byte.collect { |_, trues| average_50us_false_size <= trues.size ? 1 : 0 }.join
           end
       end
 
