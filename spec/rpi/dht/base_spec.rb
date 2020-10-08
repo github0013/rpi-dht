@@ -7,7 +7,7 @@ RSpec.describe RPi::Dht::Base do
     end
   end
 
-  describe "class" do
+  describe "base" do
     let(:pin) { 4 }
     subject { RPi::Dht::Base.new pin }
     before { allow(subject).to receive(:sleep) }
