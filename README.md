@@ -26,7 +26,7 @@ Or install it yourself as:
 ## Usage
 
 ```rb
-require "rpi-dht"
+require "rpi/dht"
 
 pin = 4
 
