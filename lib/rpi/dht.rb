@@ -9,6 +9,12 @@ module RPi
   module Dht
     extend self
 
+    # https://i.gyazo.com/8de74c9e6a7139e30c2f540715a24dc9.png
+    def set_numbering(bcm_or_board = :bcm)
+      RPi::GPIO.set_numbering bcm_or_board.to_sym
+    end
+    set_numbering
+
     def read_11!(pin)
       Dht11.read!(pin)
     end

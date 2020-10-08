@@ -4,7 +4,6 @@ end
 
 if rpi?
   require "rpi_gpio"
-  RPi::GPIO.set_numbering :bcm
 else
   require "naught"
 end
