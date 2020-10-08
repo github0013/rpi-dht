@@ -12,6 +12,45 @@ RSpec.describe RPi::Dht::Base do
     subject { RPi::Dht::Base.new pin }
     before { allow(subject).to receive(:sleep) }
 
+    describe "class" do
+      subject { RPi::Dht::Base }
+      let(:pin) { 4 }
+      let(:instance) { spy :instance }
+      let(:ambient_value) { { humidity: 10, temperature: 30, temperature_f: 86 } }
+
+      before { allow(subject).to receive(:new).and_return instance }
+
+      describe "read!" do
+        it "should return humidity and temperature" do
+          allow(instance).to receive(:convert).and_return(ambient_value)
+          expect(subject.read(pin)).to eq(ambient_value)
+        end
+      end
+
+      describe "read" do
+        it "should return humidity and temperature" do
+          allow(instance).to receive(:convert).and_return(ambient_value)
+          expect(subject.read(pin)).to eq(ambient_value)
+        end
+
+        context "when can't read value" do
+          it "should not get value" do
+            allow(instance).to receive(:convert).and_return(nil)
+            expect(subject.read(pin)).to be_nil
+          end
+        end
+
+        context "when exception occurs" do
+          it "should not raise error" do
+            allow(instance).to receive(:convert).and_raise(StandardError)
+            expect { subject.read(pin) }.not_to raise_error
+
+            expect(subject.read(pin)).to be_nil
+          end
+        end
+      end
+    end
+
     describe "init" do
       it "should hold pin number" do
         expect(subject.send :pin).to eq pin
