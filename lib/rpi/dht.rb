@@ -1,22 +1,11 @@
 require "rpi/dht/version"
-def debug?
-  not `cat /proc/cpuinfo`.include?("Raspberry Pi")
-end
-
-if debug?
-  require "naught"
-else
-  require "rpi_gpio"
-  RPi::GPIO.set_numbering :bcm
-end
+require "rpi/environment"
 
 require "rpi/dht/base"
 require "rpi/dht/dht11"
 require "rpi/dht/dht22"
 
 module RPi
-  GPIO = Naught.build(&:black_hole).new if debug?
-
   module Dht
     extend self
 
