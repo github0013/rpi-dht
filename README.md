@@ -64,6 +64,99 @@ RPi::Dht.read_22(pin, tries: 50) # tries 50 times and doesn't raise
 # or nil if it doesn't get valid data
 ```
 
+## OR ...
+
+    $ uname -a
+    Linux rpi16gb 5.4.51+ #1333 Mon Aug 10 16:38:02 BST 2020 armv6l GNU/Linux
+
+    $ lsb_release -a
+    No LSB modules are available.
+    Distributor ID:	Raspbian
+    Description:	Raspbian GNU/Linux 10 (buster)
+    Release:	10
+    Codename:	buster
+
+    $ cat /proc/cpuinfo
+    processor	: 0
+    model name	: ARMv6-compatible processor rev 7 (v6l)
+    BogoMIPS	: 697.95
+    Features	: half thumb fastmult vfp edsp java tls
+    CPU implementer	: 0x41
+    CPU architecture: 7
+    CPU variant	: 0x0
+    CPU part	: 0xb76
+    CPU revision	: 7
+
+    Hardware	: BCM2835
+    Revision	: 0010
+    Serial		: 000000005f8c6a39
+    Model		: Raspberry Pi Model B Plus Rev 1.2
+
+I am using a Raspberry Pi Model B Plus Rev 1.2 (fairly old) and it takes significant amount of time to read.
+
+### Sample source code
+
+```rb
+# read.rb
+require "benchmark"
+require "rpi/dht"
+PIN = 4
+
+Benchmark.bm 10 do |r|
+  r.report "reading 10 times" do
+    10.times { RPi::Dht.read_22(PIN) }
+  end
+end
+```
+
+    $ time ruby read.rb
+                    user     system      total        real
+    reading 10 times  2.025668   0.022232   2.047900 ( 55.610802)
+    ruby read.rb  4.62s user 0.52s system 8% cpu 58.773 total
+
+### Solution
+
+I just found there is **a device tree overlay for DHT11/22**. If you set this up, you can just read system files to read humidity and temperature.
+
+    $ cat /sys/bus/iio/devices/iio\:device0/in_humidityrelative_input
+    43300
+
+    $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input
+    27100
+
+### Setup
+
+1. take the SD card from your Raspberry Pi
+1. edit /boot/config on your computer
+1. add `dtoverlay=dht11` at the bottom
+1. set the SD card back to your Raspberry Pi
+1. run `lsmod | grep dht`, and you should see something like this
+   - `dht11 16384 0`
+1. run `cat /sys/bus/iio/devices/iio\:device0/in_humidityrelative_input` for humidity, then devide the number by 1000
+1. run `cat /sys/bus/iio/devices/iio\:device0/in_temp_input` for temperature, then devide the number by 1000
+
+It sometimes gives `Connection timed out` error, so maybe you can write something like this.
+
+```rb
+require "pathname"
+
+def read_humidity
+  Pathname("/sys/bus/iio/devices/iio\:device0/in_humidityrelative_input").read.to_f / 1000
+rescue => ex
+  sleep 0.5
+  retry
+end
+
+def read_temperature
+  Pathname("/sys/bus/iio/devices/iio\:device0/in_temp_input").read.to_f / 1000
+rescue => ex
+  sleep 0.5
+  retry
+end
+```
+
+bang!
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
