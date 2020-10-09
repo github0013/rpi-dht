@@ -6,7 +6,18 @@ module RPi
 
     class Base
       CLEAR_SIGNALS = 500 / 1000.to_f
-      START_SIGNAL = 1 / 1000.to_f
+      # DHT11
+      # Microprocessor I / O set to output at the same time output low,
+      # and low hold time can not be less than 18ms,
+      # then the microprocessor I / O is set to input state
+      # DHT22
+      # Microprocessor I/O set to output, while output low,
+      # and low hold time can not be less than 800us,
+      # typical values are down 1MS, then the microprocessor I/O is set to input state
+      #                                     min  typ  max
+      # Tbe Host the start signal down time 0.8 < 1 > 20 mS
+      START_SIGNAL = 19 / 1000.to_f
+
       VALID_BYTE_SIZE = 5 # humidity_high, humidity_low, temp_high, temp_low, parity
       BITS_IN_BYTE = 8
       HUMIDITY_PRECISION = 10.to_f
